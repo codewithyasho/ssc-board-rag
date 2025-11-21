@@ -13,7 +13,7 @@ def create_rag_chain(vectorstore, prompt):
     # 1️⃣ Create retriever
     retriever = vectorstore.as_retriever(
         search_type="mmr",
-        search_kwargs={"k": 5}
+        search_kwargs={"k": 7}
     )
 
     # 2️⃣ Initialize LLM (Ollama Chat)
