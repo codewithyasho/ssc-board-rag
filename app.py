@@ -41,25 +41,35 @@ st.markdown('<h1 class="main-header">📚 SSC Board AI Tutor</h1>',
 st.markdown('<p class="sub-header">Ask questions about your 9th & 10th grade textbooks</p>',
             unsafe_allow_html=True)
 
+
+# Cached initialization function to prevent timeout
+@st.cache_resource(show_spinner=True)
+def initialize_rag_chain():
+    """Initialize RAG chain with caching to speed up subsequent loads"""
+    try:
+        embeddings = huggingface_embeddings(model_name="BAAI/bge-m3")
+        vectorstore = load_vectorstore(
+            embeddings=embeddings,
+            vectorstore_path="faiss_index"
+        )
+        prompt = educational_prompt()
+        chain = create_rag_chain(vectorstore=vectorstore, prompt=prompt)
+        return chain
+    except Exception as e:
+        st.error(f"❌ Error loading model: {e}")
+        st.stop()
+        return None
+
+
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-if "chain" not in st.session_state:
-    with st.spinner("🔧 Loading AI model... Please wait"):
-        try:
-            embeddings = huggingface_embeddings(model_name="BAAI/bge-m3")
-            vectorstore = load_vectorstore(
-                embeddings=embeddings,
-                vectorstore_path="faiss_index"
-            )
-            prompt = educational_prompt()
-            st.session_state.chain = create_rag_chain(
-                vectorstore=vectorstore, prompt=prompt)
-            st.success("✅ AI Tutor ready!")
-        except Exception as e:
-            st.error(f"❌ Error loading model: {e}")
-            st.stop()
+# Load RAG chain with caching
+with st.spinner("🔧 Loading AI model... Please wait"):
+    chain = initialize_rag_chain()
+    if chain:
+        st.success("✅ AI Tutor ready!", icon="✅")
 
 # Display chat messages
 for message in st.session_state.messages:
@@ -77,7 +87,7 @@ if query := st.chat_input("Ask your question here..."):
     with st.chat_message("assistant"):
         with st.spinner("🤔 Thinking..."):
             try:
-                response = st.session_state.chain.invoke({"input": query})
+                response = chain.invoke({"input": query})
                 answer = response["answer"]
                 st.markdown(answer)
                 st.session_state.messages.append(
