@@ -1,8 +1,8 @@
 """
-Simple and modern RAG chain setup using LangChain Classic (Ollama + FAISS).
+Simple and modern RAG chain setup using LangChain Classic (Groq + FAISS).
 """
 
-from langchain_ollama import ChatOllama
+from langchain_groq import ChatGroq
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 
@@ -16,10 +16,9 @@ def create_rag_chain(vectorstore, prompt):
         search_kwargs={"k": 7}
     )
 
-    # 2️⃣ Initialize LLM (Ollama Chat)
-    llm = ChatOllama(
-        model="deepseek-v3.1:671b-cloud",
-        base_url="http://localhost:11434",
+    # 2️⃣ Initialize LLM (Groq Chat)
+    llm = ChatGroq(
+        model="openai/gpt-oss-120b",
         temperature=0.2
     )
 
@@ -31,6 +30,6 @@ def create_rag_chain(vectorstore, prompt):
     document_chain = create_stuff_documents_chain(llm, prompt)
     rag_chain = create_retrieval_chain(retriever, document_chain)
 
-    print("✅✅ Ollama RAG chain created successfully! \n" + "=" * 60)
+    print("✅✅ Groq RAG chain created successfully! \n" + "=" * 60)
 
     return rag_chain

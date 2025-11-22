@@ -2,7 +2,7 @@ import streamlit as st
 from src.embedding import huggingface_embeddings
 from src.vectorstore import load_vectorstore
 from src.prompt import educational_prompt
-from src.ollama_chain import create_rag_chain
+from src.groq_chain import create_rag_chain
 from dotenv import load_dotenv
 
 load_dotenv()
