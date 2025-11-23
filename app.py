@@ -33,5 +33,3 @@ if st.button("Ask") and query:
         response = chain.invoke({"input": query})
         st.write("**Answer:**")
         st.write(response["answer"])
-
-
