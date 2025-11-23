@@ -6,9 +6,14 @@ An AI-powered Question-Answering system for Maharashtra SSC Board students (9th 
 
 - **Multi-Subject Coverage**: Mathematics, Science, History, Geography, English, Hindi, Marathi, and Defence
 - **Intelligent Retrieval**: Uses FAISS vector database with semantic search
-- **Local LLM**: Runs on Ollama (DeepSeek v3.1) for privacy and offline usage
+- **Dual LLM Support**: Choose between Ollama (local, privacy-focused) or Groq (cloud-based, fast)
 - **Step-by-Step Explanations**: Breaks down complex topics for better understanding
 - **GPU Accelerated**: Fast embeddings with CUDA support
+- **📥 Export Chat History**: Download conversations as professional PDF documents
+- **📚 Subject Filters**: Filter questions by specific subjects for focused learning
+- **⚡ Quick Question Templates**: Pre-built questions for instant learning across all subjects
+- **💬 Conversational Memory**: Maintains context across multiple questions for natural dialogue
+- **🎨 Beautiful Streamlit UI**: Modern, intuitive interface with chat history management
 
 ## 📋 Prerequisites
 
@@ -19,20 +24,31 @@ An AI-powered Question-Answering system for Maharashtra SSC Board students (9th 
 ## 🚀 Installation
 
 1. **Clone the repository**
+
 ```bash
 git clone <your-repo-url>
 cd ssc-board-rag
 ```
 
 2. **Install dependencies**
+
 ```bash
-pip install langchain-classic langchain-community langchain-core langchain-huggingface langchain-ollama
+pip install -r requirements.txt
+# This will install: langchain, streamlit, faiss-cpu, reportlab, torch, and more
+```
+
+Or install individually:
+
+```bash
+pip install langchain langchain-classic langchain-core langchain-groq langchain-ollama
+pip install langchain-huggingface langchain-community
 pip install faiss-cpu  # or faiss-gpu for CUDA support
-pip install pymupdf python-dotenv torch
-pip install unstructured python-pptx python-docx
+pip install pymupdf python-dotenv torch sentence-transformers
+pip install streamlit reportlab
 ```
 
 3. **Install and start Ollama**
+
 ```bash
 # Download from https://ollama.ai/
 ollama pull deepseek-v3.1:671b-cloud
@@ -40,6 +56,7 @@ ollama serve
 ```
 
 4. **Create `.env` file** (if needed for API keys)
+
 ```bash
 # Add any environment variables here
 ```
@@ -69,15 +86,33 @@ ssc-board-rag/
 
 ## 💻 Usage
 
-### Quick Start
+### Quick Start (Streamlit UI)
 
-Run the interactive CLI:
+Run the Streamlit web application:
+
+```bash
+streamlit run app.py
+```
+
+Then interact with the AI tutor through the beautiful web interface:
+
+- **Chat with AI**: Ask questions in the chat input
+- **Use Quick Templates**: Click pre-built question buttons for instant queries
+- **Filter by Subject**: Select specific subjects (Math, Science, History, etc.)
+- **Export Chat**: Download your conversation history as a PDF
+- **View Sources**: See which textbook sections were used for answers
+
+### CLI Interface
+
+For command-line usage:
+
 ```bash
 python main.py
 ```
 
 Then ask questions:
-```
+
+```text
 Enter your query: What is Pythagoras theorem?
 Enter your query: Explain photosynthesis
 Enter your query: Who was Shivaji Maharaj?
@@ -112,7 +147,10 @@ vectorstore = create_vectorstore(chunks, embeddings)
 
 ### Change LLM Model
 
+**For Ollama (Local):**
+
 Edit `src/ollama_chain.py`:
+
 ```python
 llm = ChatOllama(
     model="llama3.1:8b",  # Change model here
@@ -120,25 +158,58 @@ llm = ChatOllama(
 )
 ```
 
+**For Groq (Cloud):**
+
+Edit `src/groq_chain.py` or set environment variable:
+
+```bash
+# In .env file
+GROQ_API_KEY=your_api_key_here
+```
+
 ### Adjust Retrieval Settings
 
-Edit `src/ollama_chain.py`:
+Edit `src/ollama_chain.py` or `src/groq_chain.py`:
+
 ```python
 retriever = vectorstore.as_retriever(
     search_type="mmr",        # or "similarity"
-    search_kwargs={"k": 10}   # number of results
+    search_kwargs={"k": 7}    # number of results (default: 7)
 )
 ```
 
 ### Modify Chunk Size
 
 Edit `src/datasplitter.py`:
+
 ```python
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1500,      # Adjust chunk size
-    chunk_overlap=300     # Adjust overlap
+    chunk_size=1200,      # Adjust chunk size (default: 1200)
+    chunk_overlap=200     # Adjust overlap (default: 200)
 )
 ```
+
+## 🎨 New Features
+
+### 📥 Export Chat History
+
+- Click "📄 Download Chat as PDF" button in the sidebar
+- Professional PDF format with clean typography
+- Includes timestamps, message count, and subject filter info
+- Auto-cleans LaTeX and special characters for readability
+
+### 📚 Subject Filters
+
+- Select from 8 subjects in the sidebar dropdown
+- Filters: All Subjects, Mathematics, Science, History, Geography, English, Hindi, Marathi
+- Contextual queries adapt to selected subject
+
+### ⚡ Quick Question Templates
+
+- Pre-built questions for each subject
+- Two-column layout for easy access
+- Instant query generation with one click
+- Templates include: formulas, concepts, historical events, and more
 
 ## 🧪 Advanced Usage
 
@@ -170,25 +241,33 @@ word_docs = process_all_word_docs("data/assignments")
 ## 🛠️ Troubleshooting
 
 ### Issue: "CUDA out of memory"
+
 **Solution**: Use CPU mode by editing `src/embedding.py`:
+
 ```python
 device = 'cpu'  # Force CPU usage
 ```
 
 ### Issue: "Ollama connection refused"
+
 **Solution**: Ensure Ollama is running:
+
 ```bash
 ollama serve
 ```
 
 ### Issue: "Model not found"
+
 **Solution**: Pull the model first:
+
 ```bash
 ollama pull deepseek-v3.1:671b-cloud
 ```
 
 ### Issue: Slow response time
-**Solution**: 
+
+**Solution**:
+
 - Reduce `k` value in retriever settings
 - Use smaller LLM model
 - Enable GPU acceleration
@@ -196,11 +275,13 @@ ollama pull deepseek-v3.1:671b-cloud
 ## 📊 System Requirements
 
 ### Minimum
+
 - **RAM**: 8 GB
 - **Storage**: 5 GB free space
 - **CPU**: 4 cores
 
 ### Recommended
+
 - **RAM**: 16 GB+
 - **GPU**: NVIDIA GPU with 8GB+ VRAM
 - **Storage**: 10 GB+ SSD
@@ -222,9 +303,12 @@ This project is for educational purposes. Textbook content belongs to Maharashtr
 ## 🙏 Acknowledgments
 
 - **LangChain**: RAG framework
-- **HuggingFace**: Embedding models
+- **HuggingFace**: Embedding models (BAAI/bge-m3)
 - **Ollama**: Local LLM inference
+- **Groq**: Cloud-based LLM API
 - **Meta FAISS**: Vector search
+- **ReportLab**: PDF generation
+- **Streamlit**: Web UI framework
 - **Maharashtra State Board**: Educational content
 
 ## 📧 Support
@@ -233,4 +317,4 @@ For questions or issues, please open a GitHub issue or contact the maintainer.
 
 ---
 
-**Made with ❤️ for SSC Board students**
+Made with ❤️ for SSC Board students
